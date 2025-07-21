@@ -28,6 +28,7 @@ export default function HomePage() {
             {/* Mobile Filter Button */}
             <div className="md:hidden mb-4">
               <Button
+                aria-label="Open filters"
                 variant="outline"
                 size="icon"
                 onClick={() => setFiltersOpen(true)}
