@@ -3,7 +3,7 @@ import { ProductGrid } from "@/components/product-grid";
 import { SearchBar } from "@/components/search-bar";
 import { CategoryFilter } from "@/components/category-filter";
 import { HeroSection } from "@/components/hero-section";
-import { ListingsProvider } from "@/components/listings-provider"; // ✅ NEW
+import { ListingsProvider } from "@/components/listings-provider";
 
 export default function HomePage() {
   return (
@@ -12,9 +12,9 @@ export default function HomePage() {
         <HeroSection />
 
         <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar */}
-            <aside className="lg:w-64 space-y-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Sidebar (hidden on mobile) */}
+            <aside className="hidden md:block md:w-64 space-y-6">
               <CategoryFilter />
             </aside>
 
