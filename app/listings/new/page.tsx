@@ -8,46 +8,100 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
-const categories = ["electronics", "vehicles", "furniture", "clothing", "real estate", "other"];
-const locations = ["Suva", "Nadi", "Lautoka", "Labasa", "Ba", "Sigatoka", "Nausori", "Tavua", "Korovou", "Levuka"];
+const categories = [
+  { id: "electronics", name: "Electronics" },
+  { id: "vehicles", name: "Vehicles" },
+  { id: "real-estate", name: "Real Estate" },
+  { id: "furniture", name: "Furniture" },
+  { id: "sports", name: "Sports & Outdoors" },
+  { id: "baby-kids", name: "Baby & Kids" },
+  { id: "fashion", name: "Fashion" },
+  { id: "books", name: "Books & Media" },
+  { id: "business", name: "Business & Industrial" },
+  { id: "music", name: "Music & Instruments" },
+];
+
+const locations = [
+  "Suva",
+  "Nadi",
+  "Lautoka",
+  "Labasa",
+  "Ba",
+  "Sigatoka",
+  "Nausori",
+  "Tavua",
+  "Korovou",
+  "Levuka",
+];
 
 export default function NewListingPage() {
   const router = useRouter();
   const { user } = useAuth();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user) {
       alert("You must be logged in to create a listing.");
       return;
     }
-
     setLoading(true);
 
+    // Upload image file if provided
+    let imageUrl: string | null = null;
+    if (file) {
+      const ext = file.name.split(".").pop();
+      const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("listing-images")
+        .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+      console.log("Supabase upload response:", { uploadData, uploadError });
+
+      if (uploadError) {
+        console.error("Upload error message:", uploadError.message);
+        alert(`Failed to upload image: ${uploadError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("listing-images")
+        .getPublicUrl(filePath);
+
+      imageUrl = urlData.publicUrl;
+    }
+
+    // Insert listing record
     const { error } = await supabase.from("listings").insert([
       {
-        user_id: user.id,
+        user_id:   user.id,
         title,
         description,
         category,
         location,
-        price: parseFloat(price),
+        price:    parseFloat(price),
         image_url: imageUrl,
-      }
+      },
     ]);
 
     setLoading(false);
-
     if (error) {
       console.error("Error creating listing:", error);
       alert("Failed to create listing.");
@@ -60,6 +114,7 @@ export default function NewListingPage() {
     <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Create New Listing</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Title */}
         <div>
           <Label>Title</Label>
           <Input
@@ -69,14 +124,18 @@ export default function NewListingPage() {
           />
         </div>
 
+        {/* Description */}
         <div>
           <Label>Description</Label>
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            required
           />
         </div>
 
+        {/* Category */}
         <div>
           <Label>Category</Label>
           <Select value={category} onValueChange={setCategory} required>
@@ -85,14 +144,15 @@ export default function NewListingPage() {
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
+        {/* Location */}
         <div>
           <Label>Location</Label>
           <Select value={location} onValueChange={setLocation} required>
@@ -109,6 +169,7 @@ export default function NewListingPage() {
           </Select>
         </div>
 
+        {/* Price */}
         <div>
           <Label>Price (FJD)</Label>
           <Input
@@ -119,14 +180,21 @@ export default function NewListingPage() {
           />
         </div>
 
+        {/* Image Upload */}
         <div>
-          <Label>Image URL</Label>
+          <Label>Photo</Label>
           <Input
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setFile(e.target.files[0]);
+              }
+            }}
           />
         </div>
 
+        {/* Submit */}
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Posting..." : "Post Listing"}
         </Button>
