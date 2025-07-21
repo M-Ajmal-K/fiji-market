@@ -1,44 +1,43 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from "@/hooks/use-auth"
-import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff } from "lucide-react"
-
-const fijiLocations = ["Suva", "Nadi", "Lautoka", "Labasa", "Ba", "Sigatoka", "Nausori", "Tavua", "Korovou", "Levuka"]
+const fijiLocations = ["Suva", "Nadi", "Lautoka", "Labasa", "Ba", "Sigatoka", "Nausori", "Tavua", "Korovou", "Levuka"];
 
 export default function SignUpPage() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [location, setLocation] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const { signUp } = useAuth()
-  const { toast } = useToast()
-  const router = useRouter()
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [location, setLocation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (password !== confirmPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (password.length < 8) {
@@ -46,29 +45,29 @@ export default function SignUpPage() {
         title: "Error",
         description: "Password must be at least 8 characters long.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      await signUp(name, email, password, location)
+      await signUp(name, location, email, password);
       toast({
         title: "Welcome to FijiMarket!",
         description: "Your account has been created successfully.",
-      })
-      router.push("/")
+      });
+      router.push("/");
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create account. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 px-4 py-8">
@@ -179,5 +178,5 @@ export default function SignUpPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

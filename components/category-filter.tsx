@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Smartphone, Car, Home, Sofa, Dumbbell, Baby, Shirt, Book, Briefcase, Music } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Smartphone, Car, Home, Sofa, Dumbbell, Baby, Shirt, Book, Briefcase, Music } from "lucide-react";
+import { useListings } from "@/components/listings-provider"; // ✅ NEW
 
 const categories = [
   { id: "electronics", name: "Electronics", icon: Smartphone, count: 45 },
@@ -17,10 +17,10 @@ const categories = [
   { id: "books", name: "Books & Media", icon: Book, count: 15 },
   { id: "business", name: "Business & Industrial", icon: Briefcase, count: 8 },
   { id: "music", name: "Music & Instruments", icon: Music, count: 11 },
-]
+];
 
 export function CategoryFilter() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const { selectedCategory, setSelectedCategory } = useListings(); // ✅ USE CONTEXT
 
   return (
     <Card>
@@ -37,7 +37,7 @@ export function CategoryFilter() {
         </Button>
 
         {categories.map((category) => {
-          const Icon = category.icon
+          const Icon = category.icon;
           return (
             <Button
               key={category.id}
@@ -53,9 +53,9 @@ export function CategoryFilter() {
                 {category.count}
               </Badge>
             </Button>
-          )
+          );
         })}
       </CardContent>
     </Card>
-  )
+  );
 }

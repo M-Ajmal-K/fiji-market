@@ -1,77 +1,116 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
-import { createContext, useContext, useState, useEffect } from "react"
-import type { User } from "@/types"
-
-interface AuthContextType {
-  user: User | null
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (name: string, email: string, password: string, location: string) => Promise<void>
-  signOut: () => void
-  loading: boolean
+interface User {
+  id: string;
+  email: string;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+interface AuthContextType {
+  user: User | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (name: string, location: string, email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  loading: boolean;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem("fiji-market-user")
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
-    }
-    setLoading(false)
-  }, [])
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || ""
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || ""
+        });
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const signIn = async (email: string, password: string) => {
-    // Mock authentication - in a real app, this would call your API
-    const mockUser: User = {
-      id: "1",
-      name: "John Doe",
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      location: "Suva",
-      avatar: "/placeholder.svg?height=40&width=40",
-      joinedAt: new Date(),
-      verified: true,
+      password
+    });
+
+    if (error) {
+      throw new Error(error.message);
     }
 
-    setUser(mockUser)
-    localStorage.setItem("fiji-market-user", JSON.stringify(mockUser))
-  }
+    router.push("/");
+  };
 
-  const signUp = async (name: string, email: string, password: string, location: string) => {
-    // Mock registration - in a real app, this would call your API
-    const mockUser: User = {
-      id: Date.now().toString(),
-      name,
+  const signUp = async (name: string, location: string, email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
-      location,
-      avatar: "/placeholder.svg?height=40&width=40",
-      joinedAt: new Date(),
-      verified: false,
+      password
+    });
+
+    if (error) {
+      throw new Error(error.message);
     }
 
-    setUser(mockUser)
-    localStorage.setItem("fiji-market-user", JSON.stringify(mockUser))
-  }
+    // Insert into profiles table
+    if (data.user) {
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: data.user.id,
+            full_name: name,
+            location: location
+          }
+        ]);
 
-  const signOut = () => {
-    setUser(null)
-    localStorage.removeItem("fiji-market-user")
-  }
+      if (insertError) {
+        console.error("Error inserting profile:", insertError);
+        throw new Error("Signup succeeded but failed to save profile info.");
+      }
+    }
+  };
 
-  return <AuthContext.Provider value={{ user, signIn, signUp, signOut, loading }}>{children}</AuthContext.Provider>
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, signIn, signUp, signOut, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

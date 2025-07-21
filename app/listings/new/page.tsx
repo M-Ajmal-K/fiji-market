@@ -8,37 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
-const categories = [
-  "electronics",
-  "vehicles",
-  "furniture",
-  "clothing",
-  "real estate",
-  "other",
-];
+const categories = ["electronics", "vehicles", "furniture", "clothing", "real estate", "other"];
+const locations = ["Suva", "Nadi", "Lautoka", "Labasa", "Ba", "Sigatoka", "Nausori", "Tavua", "Korovou", "Levuka"];
 
-const locations = [
-  "Suva",
-  "Nadi",
-  "Lautoka",
-  "Labasa",
-  "Ba",
-  "Sigatoka",
-  "Nausori",
-  "Tavua",
-  "Korovou",
-  "Levuka",
-];
-
-export default function SellPage() {
+export default function NewListingPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [title, setTitle] = useState("");
@@ -68,7 +43,7 @@ export default function SellPage() {
         location,
         price: parseFloat(price),
         image_url: imageUrl,
-      },
+      }
     ]);
 
     setLoading(false);
@@ -83,7 +58,7 @@ export default function SellPage() {
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Sell Your Item</h1>
+      <h1 className="text-2xl font-bold mb-4">Create New Listing</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label>Title</Label>
@@ -99,8 +74,6 @@ export default function SellPage() {
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            required
           />
         </div>
 
