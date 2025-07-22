@@ -1,70 +1,117 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Search, Filter } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search as SearchIcon, Filter as FilterIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useListings } from "@/components/listings-provider";
+
+const LOCATION_OPTIONS = [
+  "all",
+  "suva",
+  "nadi",
+  "lautoka",
+  "labasa",
+  "ba",
+  "sigatoka",
+  "nausori",
+  "tavua",
+  "korovou",
+];
+
+const PRICE_RANGES = [
+  "all",
+  "0-100",
+  "100-500",
+  "500-1000",
+  "1000-5000",
+  "5000+",
+];
 
 export function SearchBar() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [location, setLocation] = useState("")
-  const [priceRange, setPriceRange] = useState("")
+  const {
+    setSearchQuery,
+    setLocationFilter,
+    setPriceRange,
+  } = useListings();
+
+  // local inputs until "Search" clicked
+  const [q, setQ] = useState("");
+  const [loc, setLoc] = useState("all");
+  const [pr, setPr] = useState("all");
 
   const handleSearch = () => {
-    // Implement search functionality
-    console.log("Searching for:", { searchQuery, location, priceRange })
-  }
+    setSearchQuery(q);
+    setLocationFilter(loc);
+    setPriceRange(pr);
+  };
 
   return (
     <div className="bg-card p-4 rounded-lg border">
       <div className="flex flex-col md:flex-row gap-4">
+        {/* free-text search */}
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search for items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
               className="pl-10"
             />
           </div>
         </div>
 
-        <Select value={location} onValueChange={setLocation}>
+        {/* location filter */}
+        <Select value={loc} onValueChange={setLoc}>
           <SelectTrigger className="w-full md:w-48">
             <SelectValue placeholder="Location" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
-            <SelectItem value="suva">Suva</SelectItem>
-            <SelectItem value="nadi">Nadi</SelectItem>
-            <SelectItem value="lautoka">Lautoka</SelectItem>
-            <SelectItem value="labasa">Labasa</SelectItem>
-            <SelectItem value="ba">Ba</SelectItem>
-            <SelectItem value="sigatoka">Sigatoka</SelectItem>
+            {LOCATION_OPTIONS.map((locKey) => (
+              <SelectItem key={locKey} value={locKey}>
+                {locKey === "all"
+                  ? "All Locations"
+                  : locKey.charAt(0).toUpperCase() + locKey.slice(1)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        <Select value={priceRange} onValueChange={setPriceRange}>
+        {/* price range filter */}
+        <Select value={pr} onValueChange={setPr}>
           <SelectTrigger className="w-full md:w-48">
             <SelectValue placeholder="Price Range" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Prices</SelectItem>
-            <SelectItem value="0-100">$0 - $100</SelectItem>
-            <SelectItem value="100-500">$100 - $500</SelectItem>
-            <SelectItem value="500-1000">$500 - $1,000</SelectItem>
-            <SelectItem value="1000-5000">$1,000 - $5,000</SelectItem>
-            <SelectItem value="5000+">$5,000+</SelectItem>
+            {PRICE_RANGES.map((range) => (
+              <SelectItem key={range} value={range}>
+                {range === "all"
+                  ? "All Prices"
+                  : range === "5000+"
+                  ? "$5,000+"
+                  : `$${range.split("-")[0]} - $${range.split("-")[1]}`}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        <Button onClick={handleSearch} className="w-full md:w-auto">
-          <Filter className="h-4 w-4 mr-2" />
+        {/* apply filters */}
+        <Button
+          onClick={handleSearch}
+          className="w-full md:w-auto"
+        >
+          <FilterIcon className="h-4 w-4 mr-2" />
           Search
         </Button>
       </div>
     </div>
-  )
+  );
 }

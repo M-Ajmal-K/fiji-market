@@ -1,10 +1,21 @@
 "use client";
 
+import { useListings } from "@/components/listings-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Car, Home, Sofa, Dumbbell, Baby, Shirt, Book, Briefcase, Music } from "lucide-react";
-import { useListings } from "@/components/listings-provider"; // ✅ NEW
+import {
+  Smartphone,
+  Car,
+  Home,
+  Sofa,
+  Dumbbell,
+  Baby,
+  Shirt,
+  Book,
+  Briefcase,
+  Music,
+} from "lucide-react";
 
 const categories = [
   { id: "electronics", name: "Electronics", icon: Smartphone, count: 45 },
@@ -20,7 +31,17 @@ const categories = [
 ];
 
 export function CategoryFilter() {
-  const { selectedCategory, setSelectedCategory } = useListings(); // ✅ USE CONTEXT
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    setSearchQuery,
+  } = useListings();
+
+  const selectCategory = (catId: string | null) => {
+    setSelectedCategory(catId);
+    // Clear any previous text searches so category shows all results
+    setSearchQuery("");
+  };
 
   return (
     <Card>
@@ -31,26 +52,26 @@ export function CategoryFilter() {
         <Button
           variant={selectedCategory === null ? "default" : "ghost"}
           className="w-full justify-start"
-          onClick={() => setSelectedCategory(null)}
+          onClick={() => selectCategory(null)}
         >
           All Categories
         </Button>
 
-        {categories.map((category) => {
-          const Icon = category.icon;
+        {categories.map((cat) => {
+          const Icon = cat.icon;
           return (
             <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "ghost"}
+              key={cat.id}
+              variant={selectedCategory === cat.id ? "default" : "ghost"}
               className="w-full justify-between"
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => selectCategory(cat.id)}
             >
               <div className="flex items-center">
                 <Icon className="h-4 w-4 mr-2" />
-                {category.name}
+                {cat.name}
               </div>
               <Badge variant="secondary" className="ml-auto">
-                {category.count}
+                {cat.count}
               </Badge>
             </Button>
           );
