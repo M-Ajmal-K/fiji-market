@@ -4,7 +4,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ClientThemeProvider } from "@/components/client-theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/components/auth-provider";
@@ -27,8 +27,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider
+      <body className={inter.className} suppressHydrationWarning>
+        <ClientThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
@@ -43,7 +43,7 @@ export default function RootLayout({
             <Toaster />
             <Analytics />
           </AuthProvider>
-        </ThemeProvider>
+        </ClientThemeProvider>
       </body>
     </html>
   );

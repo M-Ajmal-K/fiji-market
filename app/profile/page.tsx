@@ -1,11 +1,17 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/auth-provider";   // ← fixed import
 import { Button } from "@/components/ui/button";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 export default function ProfilePage() {
+  const hydrated = useHydrated();
   const { user, signOut } = useAuth();
+
+  if (!hydrated) {
+    return null;
+  }
 
   return (
     <ProtectedRoute>

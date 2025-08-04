@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,9 +62,10 @@ export default function NewListingPage() {
     }
     setLoading(true);
 
-    // Upload image file if provided
+    // 1️⃣ Image upload timing
     let imageUrl: string | null = null;
     if (file) {
+      console.time("upload");
       const ext = file.name.split(".").pop();
       const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
@@ -72,6 +73,7 @@ export default function NewListingPage() {
         .from("listing-images")
         .upload(filePath, file, { cacheControl: "3600", upsert: false });
 
+      console.timeEnd("upload");
       console.log("Supabase upload response:", { uploadData, uploadError });
 
       if (uploadError) {
@@ -81,33 +83,42 @@ export default function NewListingPage() {
         return;
       }
 
+      console.time("getPublicUrl");
       const { data: urlData } = supabase.storage
         .from("listing-images")
         .getPublicUrl(filePath);
+      console.timeEnd("getPublicUrl");
 
       imageUrl = urlData.publicUrl;
     }
 
-    // Insert listing record
-    const { error } = await supabase.from("listings").insert([
+    // 2️⃣ Insert listing timing
+    console.time("insertListing");
+    const { error: insertError } = await supabase.from("listings").insert([
       {
-        user_id:   user.id,
+        user_id: user.id,
         title,
         description,
         category,
         location,
-        price:    parseFloat(price),
+        price: parseFloat(price),
         image_url: imageUrl,
       },
     ]);
+    console.timeEnd("insertListing");
 
     setLoading(false);
-    if (error) {
-      console.error("Error creating listing:", error);
+
+    if (insertError) {
+      console.error("Error creating listing:", insertError);
       alert("Failed to create listing.");
-    } else {
-      router.push("/my-listings");
+      return;
     }
+
+    // 3️⃣ Redirect timing
+    console.time("redirect");
+    router.push("/my-listings");
+    console.timeEnd("redirect");
   };
 
   return (

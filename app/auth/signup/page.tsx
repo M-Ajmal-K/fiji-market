@@ -7,13 +7,28 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@/hooks/use-auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
-const fijiLocations = ["Suva", "Nadi", "Lautoka", "Labasa", "Ba", "Sigatoka", "Nausori", "Tavua", "Korovou", "Levuka"];
+const fijiLocations = [
+  "Suva", "Nadi", "Lautoka", "Labasa", "Ba",
+  "Sigatoka", "Nausori", "Tavua", "Korovou", "Levuka",
+];
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -24,7 +39,6 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -52,16 +66,42 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      await signUp(name, location, email, password);
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (signUpError) {
+        throw new Error(signUpError.message);
+      }
+
+      const userId = signUpData?.user?.id;
+      if (!userId) {
+        throw new Error("User ID not found. Please confirm your email.");
+      }
+
+      const { error: insertError } = await supabase.from("profiles").insert([
+        {
+          id: userId,
+          full_name: name,
+          location: location,
+        },
+      ]);
+
+      if (insertError) {
+        throw new Error("Failed to save profile: " + insertError.message);
+      }
+
       toast({
         title: "Welcome to FijiMarket!",
-        description: "Your account has been created successfully.",
+        description: "Your account has been created. Please check your email to verify.",
       });
-      router.push("/");
-    } catch (error) {
+
+      router.push("/auth/signin");
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
     } finally {

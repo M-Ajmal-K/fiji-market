@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/auth-provider";  // ← useAuth from your AuthProvider
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +43,7 @@ const locations = [
 ];
 
 export default function EditListingPage() {
+  // 1) Always call hooks in the same order
   const { id } = useParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -56,6 +57,7 @@ export default function EditListingPage() {
 
   useEffect(() => {
     if (!id || !user) return;
+
     supabase
       .from("listings")
       .select("*")
@@ -66,7 +68,7 @@ export default function EditListingPage() {
           console.error(error);
           router.push("/my-listings");
         } else if (data.user_id !== user.id) {
-          // prevent unauthorized
+          // prevent unauthorized edits
           router.push("/my-listings");
         } else {
           setTitle(data.title);
@@ -85,10 +87,17 @@ export default function EditListingPage() {
 
     const { error } = await supabase
       .from("listings")
-      .update({ title, description, category, location, price: parseFloat(price) })
+      .update({
+        title,
+        description,
+        category,
+        location,
+        price: parseFloat(price),
+      })
       .eq("id", id);
 
     setLoading(false);
+
     if (error) {
       alert("Update failed");
       console.error(error);
@@ -107,7 +116,11 @@ export default function EditListingPage() {
       <form onSubmit={handleUpdate} className="space-y-4">
         <div>
           <Label>Title</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label>Description</Label>

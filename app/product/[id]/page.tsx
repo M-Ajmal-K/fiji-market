@@ -8,16 +8,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Share2, MapPin, Calendar, User, MessageCircle, Phone } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
+import {
+  Heart,
+  Share2,
+  MapPin,
+  Calendar,
+  User,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabaseClient";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 export default function ProductPage() {
+  // ⚠️ Always call all hooks in the same order:
+  const hydrated = useHydrated();
   const params = useParams();
   const { user } = useAuth();
   const [product, setProduct] = useState<any>(null);
   const [seller, setSeller] = useState<any>(null);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +35,6 @@ export default function ProductPage() {
     const fetchData = async () => {
       if (!params.id) return;
 
-      // Load product
       const { data, error } = await supabase
         .from("listings")
         .select("*")
@@ -37,10 +46,8 @@ export default function ProductPage() {
         setLoading(false);
         return;
       }
-
       setProduct(data);
 
-      // Load seller profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
@@ -54,25 +61,16 @@ export default function ProductPage() {
     fetchData();
   }, [params.id]);
 
+  // Now conditionally render once hydration has completed
+  if (!hydrated) {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="bg-muted rounded-lg h-96"></div>
-              <div className="grid grid-cols-4 gap-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-muted rounded h-20"></div>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="bg-muted h-8 rounded w-3/4"></div>
-              <div className="bg-muted h-6 rounded w-1/2"></div>
-              <div className="bg-muted h-32 rounded"></div>
-            </div>
-          </div>
+          {/* ...your skeleton markup... */}
         </div>
       </div>
     );
@@ -105,13 +103,18 @@ export default function ProductPage() {
               className="absolute top-4 right-4 bg-white/80 hover:bg-white"
               onClick={() => setIsFavorited(!isFavorited)}
             >
-              <Heart className={`h-5 w-5 ${isFavorited ? "fill-red-500 text-red-500" : ""}`} />
+              <Heart
+                className={`h-5 w-5 ${
+                  isFavorited ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
             </Button>
           </div>
         </div>
 
         {/* Product Details */}
         <div className="space-y-6">
+          {/* Title, price, badges */}
           <div>
             <div className="flex items-start justify-between mb-2">
               <h1 className="text-2xl font-bold">{product.title}</h1>
@@ -119,7 +122,6 @@ export default function ProductPage() {
                 <Share2 className="h-5 w-5" />
               </Button>
             </div>
-
             <div className="flex items-center gap-4 mb-4">
               <span className="text-3xl font-bold text-primary">
                 ${product.price?.toLocaleString()}
@@ -127,7 +129,6 @@ export default function ProductPage() {
               <Badge variant="secondary">{product.status}</Badge>
               <Badge variant="outline">{product.category}</Badge>
             </div>
-
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-1" />
@@ -146,9 +147,9 @@ export default function ProductPage() {
           <div>
             <h2 className="text-lg font-semibold mb-3">Description</h2>
             <div className="prose prose-sm max-w-none">
-              {product.description.split("\n").map((paragraph: string, index: number) => (
-                <p key={index} className="mb-2">
-                  {paragraph}
+              {product.description.split("\n").map((para: string, idx: number) => (
+                <p key={idx} className="mb-2">
+                  {para}
                 </p>
               ))}
             </div>
@@ -162,13 +163,15 @@ export default function ProductPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Avatar>
-                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarImage src={seller?.avatar_url || "/placeholder.svg"} />
                     <AvatarFallback>
                       <User className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold">{seller?.full_name || "Unknown Seller"}</h3>
+                    <h3 className="font-semibold">
+                      {seller?.full_name || "Unknown Seller"}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       {seller?.location || "Fiji"}
                     </p>
@@ -188,7 +191,7 @@ export default function ProductPage() {
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Send Message
               </Button>
-              <Button variant="outline" className="w-full bg-transparent" size="lg">
+              <Button variant="outline" className="w-full" size="lg">
                 <Phone className="h-5 w-5 mr-2" />
                 Show Phone Number
               </Button>

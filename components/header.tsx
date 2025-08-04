@@ -1,22 +1,33 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Search, Plus, User, Settings, LogOut, Heart, Package } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { ModeToggle } from "@/components/mode-toggle"
+} from "@/components/ui/dropdown-menu";
+import {
+  Search,
+  Plus,
+  User,
+  Settings,
+  LogOut,
+  Heart,
+  Package,
+} from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export function Header() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading } = useAuth();
+
+  // ⛔ Prevent hydration mismatch by not rendering until user state is loaded
+  if (loading) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,15 +66,20 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                        <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                        <AvatarImage
+                          src={user.avatar ?? "/placeholder.svg"}
+                          alt={user.name ?? "User"}
+                        />
+                        <AvatarFallback>
+                          {(user.name ?? user.email)?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">{user.name}</p>
+                        <p className="font-medium">{user.name ?? "Fiji User"}</p>
                         <p className="w-[200px] truncate text-sm text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
@@ -114,5 +130,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

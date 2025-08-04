@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/auth-provider"; // ✅ fixed import
 import { Plus, Edit, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,7 +18,6 @@ export default function MyListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch current user's listings
   useEffect(() => {
     if (!user) return;
     supabase
@@ -33,13 +32,9 @@ export default function MyListingsPage() {
       });
   }, [user]);
 
-  // Delete handler
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this listing?")) return;
-    const { error } = await supabase
-      .from("listings")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("listings").delete().eq("id", id);
 
     if (error) {
       alert("Failed to delete.");
@@ -78,7 +73,6 @@ export default function MyListingsPage() {
     );
   }
 
-  // Card component
   const ListingCard = ({ listing }: { listing: any }) => (
     <Card>
       <CardContent className="p-4">
@@ -114,11 +108,7 @@ export default function MyListingsPage() {
                 ${listing.price.toLocaleString()}
               </span>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  asChild
-                >
+                <Button size="sm" variant="outline" asChild>
                   <Link href={`/product/${listing.id}`}>
                     <Eye className="h-4 w-4" />
                   </Link>
