@@ -1,21 +1,32 @@
-import Link from "next/link"
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react"
+import Link from "next/link";
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
 
 export function Footer() {
   return (
     <footer className="bg-muted/50 border-t">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 py-8">
+        {/* use a 1-col on xs, 2-cols on sm, 4-cols on md+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">FM</span>
+                <span className="text-primary-foreground font-bold text-sm">
+                  FM
+                </span>
               </div>
               <span className="font-bold text-xl">FijiMarket</span>
             </div>
-            <p className="text-muted-foreground">
-              Fiji's premier local marketplace connecting buyers and sellers across the islands.
+            <p className="text-muted-foreground text-sm">
+              Fiji's premier local marketplace connecting buyers and sellers
+              across the islands.
             </p>
             <div className="flex space-x-4">
               <Link href="#" className="text-muted-foreground hover:text-primary">
@@ -33,7 +44,7 @@ export function Footer() {
           {/* Quick Links */}
           <div className="space-y-4">
             <h3 className="font-semibold">Quick Links</h3>
-            <ul className="space-y-2 text-muted-foreground">
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
                 <Link href="/about" className="hover:text-primary">
                   About Us
@@ -60,7 +71,7 @@ export function Footer() {
           {/* Categories */}
           <div className="space-y-4">
             <h3 className="font-semibold">Categories</h3>
-            <ul className="space-y-2 text-muted-foreground">
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
                 <Link href="/category/electronics" className="hover:text-primary">
                   Electronics
@@ -87,7 +98,7 @@ export function Footer() {
           {/* Contact */}
           <div className="space-y-4">
             <h3 className="font-semibold">Contact Us</h3>
-            <ul className="space-y-2 text-muted-foreground">
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
                 <span>support@fijimarket.com</span>
@@ -104,18 +115,26 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-muted-foreground text-sm">© 2024 FijiMarket. All rights reserved.</p>
+        <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
+          <p className="text-muted-foreground">
+            © 2024 FijiMarket. All rights reserved.
+          </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link href="/privacy" className="text-muted-foreground hover:text-primary text-sm">
+            <Link
+              href="/privacy"
+              className="text-muted-foreground hover:text-primary"
+            >
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-muted-foreground hover:text-primary text-sm">
+            <Link
+              href="/terms"
+              className="text-muted-foreground hover:text-primary"
+            >
               Terms of Service
             </Link>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }
