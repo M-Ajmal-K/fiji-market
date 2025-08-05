@@ -8,7 +8,6 @@ interface User {
   id: string;
   email: string;
   name?: string;
-  avatar?: string;
   location?: string;
 }
 
@@ -27,51 +26,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // On mount, fetch session & profile
   useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      const sessionUser = data?.session?.user;
-
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
+      const sessionUser = data.session?.user;
       if (sessionUser) {
+        // fetch profile row
         const { data: profile } = await supabase
           .from("profiles")
           .select("full_name, location")
           .eq("id", sessionUser.id)
           .single();
-
         setUser({
           id: sessionUser.id,
           email: sessionUser.email || "",
-          name: profile?.full_name || "",
-          location: profile?.location || "",
+          name: profile?.full_name || undefined,
+          location: profile?.location || undefined,
         });
       }
-
       setLoading(false);
     };
 
-    getSession();
+    init();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const sessionUser = session?.user;
-
-      if (sessionUser) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, location")
-          .eq("id", sessionUser.id)
-          .single();
-
-        setUser({
-          id: sessionUser.id,
-          email: sessionUser.email || "",
-          name: profile?.full_name || "",
-          location: profile?.location || "",
-        });
-      } else {
-        setUser(null);
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        const sessionUser = session?.user;
+        if (sessionUser) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name, location")
+            .eq("id", sessionUser.id)
+            .single();
+          setUser({
+            id: sessionUser.id,
+            email: sessionUser.email || "",
+            name: profile?.full_name || undefined,
+            location: profile?.location || undefined,
+          });
+        } else {
+          setUser(null);
+        }
       }
-    });
+    );
 
     return () => {
       listener.subscription.unsubscribe();
@@ -79,28 +77,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error, data } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
     if (error) throw new Error(error.message);
 
-    // Fetch user profile after sign in
+    // once signed in, fetch profile
     const sessionUser = data.user;
-
     if (sessionUser) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name, location")
         .eq("id", sessionUser.id)
         .single();
-
       setUser({
         id: sessionUser.id,
         email: sessionUser.email || "",
-        name: profile?.full_name || "",
-        location: profile?.location || "",
+        name: profile?.full_name || undefined,
+        location: profile?.location || undefined,
       });
     }
 
@@ -116,30 +111,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-    });
-
-    if (error) throw new Error(error.message);
-
-    const userId = data.user?.id;
-    if (!userId) throw new Error("Account created but no user ID returned.");
-
-    const { error: profileError } = await supabase.from("profiles").insert([
-      {
-        id: userId,
-        full_name: name,
-        location,
+      options: {
+        data: { full_name: name, location },
       },
-    ]);
-
-    if (profileError) {
-      console.error("Error inserting profile:", profileError);
-      throw new Error("Signup succeeded but failed to save profile info.");
-    }
+    });
+    if (error) throw new Error(error.message);
+    // user must confirm via email; onAuthStateChange will pick up the user & profile row later
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    router.push("/auth/signin");
   };
 
   return (
@@ -150,9 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
+  return ctx;
 }
