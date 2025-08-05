@@ -15,7 +15,8 @@ export interface Product {
   price: number
   location: string
   category: string
-  images: string[]
+  image_url?: string         // ✅ Added for cover image
+  images: string[]           // ✅ Keeps multi-image support
   sellerId: string
   sellerName: string
   createdAt: Date

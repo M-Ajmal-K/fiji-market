@@ -24,17 +24,14 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 flex flex-col">
       <Link href={`/product/${product.id}`}>
-        <div className="relative">
+        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-lg">
           <Image
             src={
-              product.image_url
-                ? product.image_url
-                : product.images?.[0] || "/placeholder.svg"
+              product.image_url ?? product.images?.[0] ?? "/placeholder.svg"
             }
             alt={product.title}
-            width={300}
-            height={200}
-            className="w-full h-40 sm:h-48 object-cover rounded-t-lg"
+            fill
+            className="object-cover"
             unoptimized
           />
           <Button
