@@ -68,7 +68,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Categories 
           <div className="space-y-4">
             <h3 className="font-semibold">Categories</h3>
             <ul className="space-y-2 text-muted-foreground text-sm">
@@ -94,7 +94,8 @@ export function Footer() {
               </li>
             </ul>
           </div>
-
+          */}
+          
           {/* Contact */}
           <div className="space-y-4">
             <h3 className="font-semibold">Contact Us</h3>
